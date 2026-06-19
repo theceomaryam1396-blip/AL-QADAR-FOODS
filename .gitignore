@@ -7,10 +7,19 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Runtime / process logs
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build output
 node_modules
 dist
 dist-ssr
 .output
+.vite
 .vinxi
 .tanstack/**
 .nitro
@@ -34,3 +43,66 @@ dist-ssr
 .lovable
 npm-ls-vite.json
 tsconfig.tsbuildinfo
+
+# Coverage and test output
+lib-cov
+coverage
+*.lcov
+.nyc_output
+
+# Dependency directories
+bower_components
+jspm_packages/
+web_modules/
+
+# Optional caches
+.npm
+.eslintcache
+.stylelintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Parcel cache
+.cache
+.parcel-cache
+
+# Next.js / Nuxt / Gatsby / Vuepress / SvelteKit / Docusaurus / Serverless
+.next
+out
+.nuxt
+.cache/
+# public
+.vuepress/dist
+.temp
+.svelte-kit/
+**/.vitepress/dist
+**/.vitepress/cache
+.docusaurus
+.serverless/
+.fusebox/
+.dynamodb/
+.firebase/
+.tern-port
+.vscode-test
+
+# pnpm
+.pnpm-store
+
+# yarn v3
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Vite files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

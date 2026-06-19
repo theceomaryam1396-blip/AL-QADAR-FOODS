@@ -1,0 +1,7 @@
+node_modules
+dist
+.vscode
+.workspace
+.lovable
+npm-ls-vite.json
+tsconfig.tsbuildinfo

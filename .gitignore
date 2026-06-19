@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .workspace
+.lovable
+npm-ls-vite.json
+tsconfig.tsbuildinfo

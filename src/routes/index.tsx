@@ -8,12 +8,23 @@ import {
   waOrderLink,
   type MenuItem,
 } from "@/data/menu";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import heroImg from "@/assets/hero.jpg";
 import cateringImg from "@/assets/cat-catering.jpg";
 import niazImg from "@/assets/cat-niaz.jpg";
-import ownerAsset from "@/assets/owner.asset.json";
-import qrAsset from "@/assets/qr.asset.json";
-import logoAsset from "@/assets/logo.asset.json";
+import ownerImg from "@/assets/owner.svg";
+import qrImg from "@/assets/qr.svg";
+import logoImg from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,6 +91,52 @@ function Home() {
       (i.name + " " + (i.variant ?? "")).toLowerCase().includes(q),
     );
   }, [activeCategory, search]);
+
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+
+  const paymentMethods = [
+    { label: "Cash on Delivery", icon: "💵", action: "cash" },
+    { label: "Easypaisa", icon: "📱", action: "easypaisa" },
+    { label: "JazzCash", icon: "💸", action: "jazzcash" },
+    { label: "Bank Transfer", icon: "🏦", action: "bank" },
+    { label: "Credit Card", icon: "💳", action: "card" },
+    { label: "Debit Card", icon: "💳", action: "card" },
+  ];
+
+  function handlePaymentSelection(label: string) {
+    setSelectedPaymentMethod(label);
+    setPaymentModalOpen(true);
+  }
+
+  function getPaymentDescription(method: string | null) {
+    switch (method) {
+      case "Cash on Delivery":
+        return "Pay in cash at delivery. Perfect for quick and easy orders.";
+      case "Easypaisa":
+        return "Send payment using Easypaisa to our registered business number via app or USSD.";
+      case "JazzCash":
+        return "Send payment using JazzCash to our business wallet, then confirm via WhatsApp.";
+      case "Bank Transfer":
+        return "Transfer to our bank account. Send the transaction details on WhatsApp after payment.";
+      case "Credit Card":
+      case "Debit Card":
+        return "Use our secure checkout to pay by card, or place your order first and pay on delivery.";
+      default:
+        return "Select a payment method to get checkout instructions.";
+    }
+  }
+
+  function getWhatsAppMessage(method: string | null) {
+    const base = "Assalam-o-Alaikum, I want to place an order from AL-QADAR FOODS POINT.";
+    if (!method) return base;
+    return `${base} I would like to pay with ${method}. Please send payment details.`;
+  }
+
+  function handleProceedToCheckout() {
+    window.open(waOrderLink(getWhatsAppMessage(selectedPaymentMethod)), "_blank");
+    setPaymentModalOpen(false);
+  }
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -160,7 +217,7 @@ function Home() {
         <div className="grid gap-10 md:grid-cols-[260px_1fr] md:items-center">
           <div className="relative mx-auto h-64 w-64 overflow-hidden rounded-2xl ring-gold shadow-gold md:h-auto md:w-full md:aspect-square">
             <img
-              src={ownerAsset.url}
+              src={ownerImg}
               alt="Usman Waheed — Owner, AL-QADAR FOODS POINT"
               loading="lazy"
               className="h-full w-full object-cover"
@@ -412,18 +469,51 @@ function Home() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
             <h3 className="font-display text-xl font-bold">💳 Payment Methods</h3>
-            <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-3">
-              {[["💵","Cash on Delivery"],["📱","Easypaisa"],["💸","JazzCash"],["🏦","Bank Transfer"],["💳","Credit Card"],["💳","Debit Card"]].map(([i,n]) => (
-                <div key={n} className="rounded-xl border border-border bg-background p-3 text-center">
-                  <div className="text-xl">{i}</div>
-                  <div className="mt-1 text-xs">{n}</div>
-                </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {paymentMethods.map((method) => (
+                <Button
+                  key={method.label}
+                  variant="outline"
+                  className="group flex flex-col items-start justify-between gap-3 rounded-3xl border-border bg-background p-4 text-left transition hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10"
+                  onClick={() => handlePaymentSelection(method.label)}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl transition group-hover:bg-primary group-hover:text-primary-foreground">
+                    {method.icon}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">{method.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Tap to select</p>
+                  </div>
+                </Button>
               ))}
             </div>
             <p className="mt-4 text-xs text-muted-foreground">All secure payment methods accepted.</p>
           </div>
         </div>
       </Section>
+      <AlertDialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Payment Method Selected</AlertDialogTitle>
+            <AlertDialogDescription>
+              {getPaymentDescription(selectedPaymentMethod)}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="mt-4 rounded-3xl border border-border bg-background p-4 text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">Selected option</p>
+            <p className="mt-1 text-base">{selectedPaymentMethod ?? "No method selected"}</p>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            For a restaurant checkout, the smoothest experience is to confirm your order via WhatsApp and tell us which payment method you chose.
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction onClick={handleProceedToCheckout}>
+              Continue to WhatsApp
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* REVIEWS */}
       <Section eyebrow="Customer Love" title="What Lahore is saying">
@@ -467,7 +557,7 @@ function Home() {
           <div className="rounded-2xl border border-gold/40 bg-gradient-to-br from-card to-background p-6 text-center">
             <p className="text-xs uppercase tracking-widest text-gold">Scan to Order</p>
             <img
-              src={qrAsset.url}
+              src={qrImg}
               alt="WhatsApp order QR code"
               loading="lazy"
               className="mx-auto mt-3 h-40 w-40 rounded-xl bg-white p-2"
@@ -779,7 +869,7 @@ function Footer() {
             <span className="font-display text-lg font-bold">AL-QADAR FOODS</span>
           </div>
           <img
-            src={logoAsset.url}
+            src={logoImg}
             alt="Al Qadar Foods"
             loading="lazy"
             className="mt-4 h-24 w-auto rounded-md object-contain opacity-90"

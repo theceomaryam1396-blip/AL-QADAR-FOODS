@@ -8,7 +8,6 @@ import {
   waOrderLink,
   type MenuItem,
 } from "@/data/menu";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -470,22 +469,33 @@ function Home() {
           <div className="rounded-2xl border border-border bg-card p-6">
             <h3 className="font-display text-xl font-bold">💳 Payment Methods</h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {paymentMethods.map((method) => (
-                <Button
-                  key={method.label}
-                  variant="outline"
-                  className="group flex flex-col items-start justify-between gap-3 rounded-3xl border-border bg-background p-4 text-left transition hover:-translate-y-0.5 hover:border-primary hover:bg-primary/10"
-                  onClick={() => handlePaymentSelection(method.label)}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl transition group-hover:bg-primary group-hover:text-primary-foreground">
-                    {method.icon}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-foreground">{method.label}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Tap to select</p>
-                  </div>
-                </Button>
-              ))}
+              {paymentMethods.map((method) => {
+                const selected = selectedPaymentMethod === method.label;
+                return (
+                  <button
+                    key={method.label}
+                    type="button"
+                    onClick={() => handlePaymentSelection(method.label)}
+                    aria-pressed={selected}
+                    className={`flex flex-col items-start justify-between gap-3 rounded-3xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-gold/30 ${
+                      selected
+                        ? "border-gold bg-gold/10 text-foreground shadow-[0_0_0_1px_rgba(234,179,8,0.2)]"
+                        : "border-border bg-background hover:-translate-y-0.5 hover:border-gold hover:bg-gold/10"
+                    }`}
+                  >
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-2xl transition ${
+                      selected ? "bg-gold text-gold-foreground" : "bg-primary/10"
+                    }`}>
+                      {method.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate">{method.label}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Tap to select</p>
+                    </div>
+                    {selected && <div className="self-end text-gold text-xl font-bold">✓</div>}
+                  </button>
+                );
+              })}
             </div>
             <p className="mt-4 text-xs text-muted-foreground">All secure payment methods accepted.</p>
           </div>

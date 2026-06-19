@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createReadStream, statSync } from 'fs';
-import { join, extname } from 'path';
+import { join, extname, normalize } from 'path';
 
 const mimeTypes: Record<string, string> = {
   '.js': 'application/javascript',
@@ -16,13 +16,27 @@ const mimeTypes: Record<string, string> = {
 };
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
-  const assetPath = request.query[0] as string;
+  // Try common locations for the capture group, fall back to parsing the URL.
+  let assetPath = (request.query && (request.query[0] || request.query['0'])) as string | undefined;
+  if (!assetPath && request.url) {
+    try {
+      const u = new URL(request.url, `https://${request.headers.host || 'localhost'}`);
+      const pathname = u.pathname || '';
+      const match = pathname.match(/\/assets\/(.*)/);
+      if (match) assetPath = decodeURIComponent(match[1]);
+    } catch (err) {
+      // ignore
+    }
+  }
+
   if (!assetPath) {
     response.status(404).send('Not found');
     return;
   }
 
-  const filePath = join(process.cwd(), 'dist', 'client', 'assets', assetPath);
+  // Prevent path traversal
+  const safePath = normalize(assetPath).replace(/^\.\/(\\|\/)/, '');
+  const filePath = join(process.cwd(), 'dist', 'client', 'assets', safePath);
   try {
     const stats = statSync(filePath);
     if (!stats.isFile()) throw new Error('Not a file');
@@ -34,6 +48,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const stream = createReadStream(filePath);
     stream.pipe(response);
   } catch (error) {
+    console.error('Asset not found:', filePath, error);
     response.status(404).send('Asset not found');
   }
 }

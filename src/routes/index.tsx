@@ -21,9 +21,9 @@ import {
 import heroImg from "@/assets/hero.jpg";
 import cateringImg from "@/assets/cat-catering.jpg";
 import niazImg from "@/assets/cat-niaz.jpg";
-import ownerImg from "@/assets/owner.jpeg";
-import qrImg from "@/assets/qr.jpeg";
-import logoImg from "@/assets/logo.jpeg";
+import ownerImg from "@/assets/owner.jpg";
+import qrImg from "@/assets/qr.jpg";
+import logoImg from "@/assets/logo.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({

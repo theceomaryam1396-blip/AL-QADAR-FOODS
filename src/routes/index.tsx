@@ -195,7 +195,7 @@ function Home() {
                 🕌 Muharram Niaz
               </a>
             </div>
-            <dl className="mt-12 grid max-w-2xl grid-cols-3 gap-6 border-t border-border pt-8">
+            <dl className="mt-12 grid max-w-2xl grid-cols-1 gap-6 border-t border-border pt-8 sm:grid-cols-3">
               {[
                 ["10+", "Years experience"],
                 ["50–400", "Guests catered"],

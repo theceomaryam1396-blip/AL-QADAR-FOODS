@@ -3,17 +3,30 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET;
-
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin • AL-QADAR FOODS POINT" },
-      { name: "description", content: "Secure admin dashboard for AL-QADAR FOODS POINT." },
+      { name: "description", content: "Administration area for AL-QADAR FOODS POINT." },
     ],
   }),
-  beforeLoad: ({ location }) => {
-    if (!ADMIN_SECRET || location.search?.secret !== ADMIN_SECRET) {
+  // Protect the route by verifying the current Supabase session and the
+  // user's `profiles.role` is `admin`.
+  beforeLoad: async () => {
+    const client = getSupabaseClient();
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const session = sessionData.session;
+      if (!session?.user) {
+        throw redirect({ to: "/" });
+      }
+
+      const uid = session.user.id;
+      const { data: profile, error } = await client.from("profiles").select("role").eq("id", uid).single();
+      if (error || !profile || profile.role !== "admin") {
+        throw redirect({ to: "/" });
+      }
+    } catch (err) {
       throw redirect({ to: "/" });
     }
   },
@@ -161,15 +174,10 @@ function AdminPage() {
         <div className="mb-10 rounded-3xl border border-border bg-card/80 p-8 shadow-card backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Hidden admin portal</p>
-              <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl">AL-QADAR FOODS Admin</h1>
+              <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl">Admin Dashboard</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Secure access for restaurant management. Log in with Supabase credentials to view orders, catering requests, and site control actions.
+                Manage orders and catering requests for AL-QADAR FOODS.
               </p>
-            </div>
-            <div className="rounded-3xl bg-background/80 px-5 py-4 text-sm text-foreground shadow-sm ring-1 ring-border">
-              <p className="font-semibold">Route</p>
-              <p className="mt-1 text-muted-foreground">/admin</p>
             </div>
           </div>
         </div>
@@ -214,12 +222,8 @@ function AdminPage() {
             </section>
 
             <div className="rounded-3xl border border-border bg-card/80 p-8 shadow-card">
-              <h3 className="text-lg font-semibold">Admin notes</h3>
-              <ul className="mt-5 space-y-4 text-sm text-muted-foreground">
-                <li>Keep this URL private and do not link from the public site.</li>
-                <li>Supabase auth protects this route with secure credentials.</li>
-                <li>Orders and catering requests load from the Supabase tables.</li>
-              </ul>
+              <h3 className="text-lg font-semibold">Access</h3>
+              <p className="mt-3 text-sm text-muted-foreground">Sign in with your admin credentials to continue.</p>
             </div>
           </div>
         ) : (
@@ -229,9 +233,7 @@ function AdminPage() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-bold">Welcome back, {user}</h2>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      You are signed in to the hidden admin dashboard.
-                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">You are signed in.</p>
                   </div>
                   <Button variant="secondary" onClick={handleLogout} disabled={loading}>
                     {loading ? "Signing out..." : "Sign out"}
@@ -260,9 +262,7 @@ function AdminPage() {
 
               <section className="rounded-3xl border border-border bg-card/80 p-8 shadow-card">
                 <h3 className="text-lg font-semibold">Admin access</h3>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  This admin portal is intentionally hidden and only accessible via the direct URL.
-                </p>
+                <p className="mt-3 text-sm text-muted-foreground">Administrative controls and data are shown below.</p>
                 <div className="mt-6 space-y-3 text-sm text-muted-foreground">
                   <p>Use Supabase auth to manage access.</p>
                   <p>All data loading occurs securely from Supabase storage.</p>
